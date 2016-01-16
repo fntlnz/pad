@@ -36,11 +36,13 @@ pad:
     ;
 
 top_statements:
-    top_statements top_statement { cout << "uno" << endl; }
-    | /* empty */  { cout << "due" << endl; } /* allocate statement list when a data structure is available to do so */
+    top_statements top_statement { cout << "found top statement" << endl; }
+    | /* empty */  { cout << "allocate statement list" << endl; } /* allocate statement list when a data structure is available to do so */
 
 top_statement:
     TOKEN_NAMESPACE namespace_name ';' { cout << "Namespace: " << *$2 << endl; }
+    | TOKEN_NAMESPACE namespace_name '{' top_statements '}' { cout << "Namespace: " << *$2 << endl; }
+    | TOKEN_NAMESPACE '{' top_statements '}' { cout << "Global namespace" << endl; }
     ;
 
 namespace_name:

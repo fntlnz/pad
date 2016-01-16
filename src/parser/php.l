@@ -49,5 +49,15 @@ TOKENS [;:,.\[\]()|^&+-/*=%|~$<>?@]
     return yytext[0];
 }
 
+<IN_SCRIPTING>"{" {
+    /* TODO: push and pop scopes stack see zend_language_scanner.l:1577 */
+    return yytext[0];
+}
+
+<IN_SCRIPTING>"}" {
+    /* TODO: push and pop scopes stack see zend_language_scanner.l:1577 */
+    return yytext[0];
+}
+
 <INITIAL>{ANY_CHARACTER} ;
 %%

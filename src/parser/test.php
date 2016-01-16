@@ -1,5 +1,6 @@
-Ishouldtbeconsideredatall
 <?php
-namespace Foo\Bar;
+namespace Baz;
+namespace Foo {}
+namespace Foo\Bar {}
+namespace {}
 ?>
-Ishouldtbeconsideredatall

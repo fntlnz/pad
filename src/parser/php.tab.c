@@ -404,16 +404,16 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  4
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   7
+#define YYLAST   15
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  9
+#define YYNTOKENS  11
 /* YYNNTS -- Number of nonterminals.  */
 #define YYNNTS  5
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  7
+#define YYNRULES  9
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  13
+#define YYNSTATES  19
 
 /* YYTRANSLATE[YYX] -- Symbol number corresponding to YYX as returned
    by yylex, with out-of-bounds checking.  */
@@ -439,7 +439,7 @@ static const yytype_uint8 yytranslate[] =
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,     9,     2,    10,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -460,7 +460,7 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    35,    35,    47,    48,    51,    55,    56
+       0,    35,    35,    39,    40,    43,    44,    45,    49,    50
 };
 #endif
 
@@ -471,7 +471,8 @@ static const char *const yytname[] =
 {
   "$end", "error", "$undefined", "TOKEN_STRING", "TOKEN_OPEN_TAG",
   "TOKEN_CLOSE_TAG", "TOKEN_NAMESPACE", "TOKEN_NAMESPACE_SEPARATOR", "';'",
-  "$accept", "pad", "top_statements", "top_statement", "namespace_name", YY_NULLPTR
+  "'{'", "'}'", "$accept", "pad", "top_statements", "top_statement",
+  "namespace_name", YY_NULLPTR
 };
 #endif
 
@@ -480,14 +481,15 @@ static const char *const yytname[] =
    (internal) symbol number NUM (which must be that of a token).  */
 static const yytype_uint16 yytoknum[] =
 {
-       0,   256,   257,   258,   259,   260,   261,   262,    59
+       0,   256,   257,   258,   259,   260,   261,   262,    59,   123,
+     125
 };
 # endif
 
-#define YYPACT_NINF -6
+#define YYPACT_NINF -8
 
 #define yypact_value_is_default(Yystate) \
-  (!!((Yystate) == (-6)))
+  (!!((Yystate) == (-8)))
 
 #define YYTABLE_NINF -1
 
@@ -498,8 +500,8 @@ static const yytype_uint16 yytoknum[] =
      STATE-NUM.  */
 static const yytype_int8 yypact[] =
 {
-      -2,    -6,     5,    -5,    -6,    -6,     3,    -6,    -6,    -4,
-       4,    -6,    -6
+      -1,    -8,    14,     7,    -8,    -8,    -3,    -8,    -8,    -8,
+       2,    -5,    12,    -8,    -8,    -8,    -8,    -2,    -8
 };
 
   /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -507,20 +509,20 @@ static const yytype_int8 yypact[] =
      means the default is an error.  */
 static const yytype_uint8 yydefact[] =
 {
-       0,     4,     0,     0,     1,     2,     0,     3,     6,     0,
-       0,     5,     7
+       0,     4,     0,     0,     1,     2,     0,     3,     8,     4,
+       0,     0,     0,     5,     4,     7,     9,     0,     6
 };
 
   /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-      -6,    -6,    -6,    -6,    -6
+      -8,    -8,    -7,    -8,    -8
 };
 
   /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-      -1,     2,     3,     7,     9
+      -1,     2,     3,     7,    10
 };
 
   /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -528,32 +530,34 @@ static const yytype_int8 yydefgoto[] =
      number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_uint8 yytable[] =
 {
-       5,     6,     1,    10,    11,     4,     8,    12
+       8,     6,    11,     1,     6,    15,     9,    17,    18,    12,
+      13,    14,     5,     6,     4,    16
 };
 
 static const yytype_uint8 yycheck[] =
 {
-       5,     6,     4,     7,     8,     0,     3,     3
+       3,     6,     9,     4,     6,    10,     9,    14,    10,     7,
+       8,     9,     5,     6,     0,     3
 };
 
   /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
      symbol of state STATE-NUM.  */
 static const yytype_uint8 yystos[] =
 {
-       0,     4,    10,    11,     0,     5,     6,    12,     3,    13,
-       7,     8,     3
+       0,     4,    12,    13,     0,     5,     6,    14,     3,     9,
+      15,    13,     7,     8,     9,    10,     3,    13,    10
 };
 
   /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
 static const yytype_uint8 yyr1[] =
 {
-       0,     9,    10,    11,    11,    12,    13,    13
+       0,    11,    12,    13,    13,    14,    14,    14,    15,    15
 };
 
   /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
 static const yytype_uint8 yyr2[] =
 {
-       0,     2,     3,     2,     0,     3,     1,     3
+       0,     2,     3,     2,     0,     3,     5,     4,     1,     3
 };
 
 
@@ -1323,41 +1327,53 @@ yyreduce:
   switch (yyn)
     {
         case 3:
-#line 47 "php.y" /* yacc.c:1646  */
-    { cout << "uno" << endl; }
-#line 1329 "php.tab.c" /* yacc.c:1646  */
+#line 39 "php.y" /* yacc.c:1646  */
+    { cout << "found top statement" << endl; }
+#line 1333 "php.tab.c" /* yacc.c:1646  */
     break;
 
   case 4:
-#line 48 "php.y" /* yacc.c:1646  */
-    { cout << "due" << endl; }
-#line 1335 "php.tab.c" /* yacc.c:1646  */
+#line 40 "php.y" /* yacc.c:1646  */
+    { cout << "allocate statement list" << endl; }
+#line 1339 "php.tab.c" /* yacc.c:1646  */
     break;
 
   case 5:
-#line 51 "php.y" /* yacc.c:1646  */
+#line 43 "php.y" /* yacc.c:1646  */
     { cout << "Namespace: " << *(yyvsp[-1].realstringval) << endl; }
-#line 1341 "php.tab.c" /* yacc.c:1646  */
+#line 1345 "php.tab.c" /* yacc.c:1646  */
     break;
 
   case 6:
-#line 55 "php.y" /* yacc.c:1646  */
-    { std::string *token_string = new std::string((yyvsp[0].sval)); (yyval.realstringval) = token_string; }
-#line 1347 "php.tab.c" /* yacc.c:1646  */
+#line 44 "php.y" /* yacc.c:1646  */
+    { cout << "Namespace: " << *(yyvsp[-3].realstringval) << endl; }
+#line 1351 "php.tab.c" /* yacc.c:1646  */
     break;
 
   case 7:
-#line 56 "php.y" /* yacc.c:1646  */
+#line 45 "php.y" /* yacc.c:1646  */
+    { cout << "Global namespace" << endl; }
+#line 1357 "php.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 8:
+#line 49 "php.y" /* yacc.c:1646  */
+    { std::string *token_string = new std::string((yyvsp[0].sval)); (yyval.realstringval) = token_string; }
+#line 1363 "php.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 9:
+#line 50 "php.y" /* yacc.c:1646  */
     {
         (yyvsp[-2].realstringval)->append("\\");
         (yyvsp[-2].realstringval)->append((yyvsp[0].sval));
         (yyval.realstringval) = (yyvsp[-2].realstringval);
     }
-#line 1357 "php.tab.c" /* yacc.c:1646  */
+#line 1373 "php.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 1361 "php.tab.c" /* yacc.c:1646  */
+#line 1377 "php.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1592,7 +1608,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 63 "php.y" /* yacc.c:1906  */
+#line 57 "php.y" /* yacc.c:1906  */
 
 
 int main(int, char**) {
