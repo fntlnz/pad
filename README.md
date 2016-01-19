@@ -1,4 +1,4 @@
-# PHP Autoloader Daemon
+# PHP Autocompletion Daemon
 
 ## Requirements
 
