@@ -20,21 +20,12 @@ Debian/Ubuntu
 sudo apt-get install -y flex bison g++ cmake make
 ```
 
-## Build the parser
-
-At the moment the parser is not integrated in the CMake build see [#2](https://github.com/fntlnz/pad/issues/2).
-To test it and add features follow this workflow:
+## Build
 
 ```
-cd src/parser
-```
-
-...
-edit php.l and php.y
-...
-
-```
+cmake .
 make
+make pad
 ```
 
-run ./php and see how this parser parse test.php file
+run ./bin/pad and see how this parser parse test.php file
