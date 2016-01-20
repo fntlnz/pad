@@ -1,5 +1,4 @@
 %{
-#include <cstdio>
 #include <iostream>
 using namespace std;
 #define YY_DECL extern "C" int yylex()
@@ -10,12 +9,12 @@ int yycolumn = 1;
     yylloc.last_column = yycolumn + yyleng - 1; \
     yycolumn += yyleng;
 
-#include "php.tab.h"  // to get the token types that we return
-
+#include "parser/parser.hpp"
 %}
 
 %s IN_SCRIPTING
 %option yylineno
+%option noyywrap
 ANY_CHARACTER  .
 LABEL [a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*
 TOKENS [;:,.\[\]()|^&+-/*=%|~$<>?@]
