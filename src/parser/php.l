@@ -39,6 +39,10 @@ TOKENS [;:,.\[\]()|^&+-/*=%|~$<>?@]
     return TOKEN_NAMESPACE;
 }
 
+<IN_SCRIPTING>"use" {
+    return TOKEN_USE;
+}
+
 <IN_SCRIPTING>{LABEL} {
     yylval.sval = strdup(yytext);
     return TOKEN_STRING;
@@ -57,6 +61,7 @@ TOKENS [;:,.\[\]()|^&+-/*=%|~$<>?@]
     /* TODO: push and pop scopes stack see zend_language_scanner.l:1577 */
     return yytext[0];
 }
+
 
 <INITIAL>{ANY_CHARACTER} ;
 %%

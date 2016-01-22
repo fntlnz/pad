@@ -24,10 +24,13 @@ void yyerror (char const *msg);
 
 %token TOKEN_OPEN_TAG
 %token TOKEN_CLOSE_TAG
-%token TOKEN_NAMESPACE
-%token TOKEN_NAMESPACE_SEPARATOR
+%token TOKEN_NAMESPACE TOKEN_NAMESPACE_SEPARATOR
+%token TOKEN_USE
+%token TOKEN_FUNCTION TOKEN_CONST
 
-%type <realstringval> namespace_name
+/*%type <ival> use_type;*/
+%type <realstringval> namespace_name use_declaration unprefixed_use_declaration
+
 %%
 
 pad:
@@ -42,6 +45,7 @@ top_statement:
   TOKEN_NAMESPACE namespace_name ';' { cout << "Namespace: " << *$2 << endl; }
   | TOKEN_NAMESPACE namespace_name '{' top_statements '}' { cout << "Namespace: " << *$2 << endl; }
   | TOKEN_NAMESPACE '{' top_statements '}' { cout << "Global namespace" << endl; }
+  | TOKEN_USE use_declarations ';'  { cout << "Found use statement" << endl; }
   ;
 
 namespace_name:
@@ -53,24 +57,25 @@ namespace_name:
   }
   ;
 
+/*use_type:*/
+  /*TOKEN_FUNCTION  { $$ = TOKEN_FUNCTION; }*/
+  /*| TOKEN_CONST   { $$ = TOKEN_CONST; }*/
+/*  ;*/
+
+use_declarations:
+  /*use_declarations ',' use_declaration { [> do nothing for now <] }*/
+  use_declaration { cout << "Using delcaration of: "  << *$1 << endl; }
+  ;
+
+use_declaration:
+  unprefixed_use_declaration { $$ = $1; }
+  | TOKEN_NAMESPACE_SEPARATOR unprefixed_use_declaration { $$ = $2; }
+
+unprefixed_use_declaration:
+  namespace_name { $$ = $1; }
+  /*| namespace_name TOKEN_AS TOKEN_STRING { }*/
+
 %%
-
-/*int main(int, char**) {*/
-  /*// open a file handle to a particular file:*/
-  /*FILE *myfile = fopen("test.php", "r");*/
-  /*// make sure it is valid:*/
-  /*if (!myfile) {*/
-      /*cout << "I can't open test.php!" << endl;*/
-      /*return -1;*/
-  /*}*/
-  /*// set flex to read from it instead of defaulting to STDIN:*/
-  /*yyin = myfile;*/
-
-  /*// parse through the input until there is no more:*/
-  /*do {*/
-      /*yyparse();*/
-  /*} while (!feof(yyin));*/
-/*}*/
 
 void yyerror (char const *msg) {
   cout << "EEK, parse error!  Message: " << msg << "line: " << yylloc.first_line << endl;
