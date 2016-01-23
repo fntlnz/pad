@@ -1,11 +1,22 @@
 #include "example.hpp"
+#include "ast/node.hpp"
 #include <string>
 #include <iostream>
+#include <typeinfo>
 extern "C"{
 #include "parser/parser.hpp"
 }
 
 extern "C" FILE *yyin;
+extern "C" pad::ast::Node *root;
+
+void dump_ast(pad::ast::Node *ast) {
+  std::cout << typeid(ast).name() << " :" << ast->value << std::endl;
+  for (auto& v : ast->children) {
+    dump_ast(v);
+  }
+}
+
 int parse() {
   // open a file handle to a particular file:
   FILE *myfile = fopen("test.php", "r");
@@ -21,5 +32,7 @@ int parse() {
   do {
     yyparse();
   } while (!feof(yyin));
+
+  dump_ast(root);
   return 0;
 }

@@ -1,5 +1,5 @@
 include_directories(${COMMON_INCLUDES} ${CMAKE_CURRENT_BINARY_DIR})
-set(SOURCE_FILES example.cpp)
+set(SOURCE_FILES example.cpp ast/node.cpp)
 
 find_package(BISON)
 find_package(FLEX)

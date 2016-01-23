@@ -9,6 +9,7 @@ int yycolumn = 1;
     yylloc.last_column = yycolumn + yyleng - 1; \
     yycolumn += yyleng;
 
+#include "ast/node.hpp"
 #include "parser/parser.hpp"
 %}
 
