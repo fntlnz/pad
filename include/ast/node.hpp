@@ -6,11 +6,50 @@ namespace pad {
 namespace ast {
 class Node {
   public:
-    Node(std::string val) : value(val) { };
-    Node() { };
-    std::string value;
     std::vector<Node *> children;
+    virtual std::string getRaw() = 0;
 };
+
+class StatementListNode : public Node {
+  public:
+    std::string getRaw() {
+      return "Statement list node";
+    }
+};
+
+class NamespaceNode : public Node {
+  public:
+    NamespaceNode(std::string n) : name(n) {};
+    const std::string name;
+    std::string getRaw() {
+      return "Namespace: " + name;
+    }
+};
+
+class UseNode : public Node {
+  public:
+    UseNode(std::string n) : name(n) {};
+    const std::string name;
+    std::string getRaw() {
+      return "Use: " + name;
+    }
+};
+
+
+class UseElementNode : public Node {
+  public:
+    UseElementNode(std::string n) : name(n) {};
+    UseElementNode(std::string n, std::string a) : name(n), alias(a) {};
+    const std::string name;
+    const std::string alias;
+    std::string getRaw() {
+      if (alias.empty()) {
+        return "Use: " + name;
+      }
+      return "Use: " + name + " as " + alias;
+    }
+};
+
 } /* ast */
 } /* pad  */ 
 #endif /* ifndef PAD_AST_NODE_H */

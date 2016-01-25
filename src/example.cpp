@@ -11,7 +11,7 @@ extern "C" FILE *yyin;
 extern "C" pad::ast::Node *root;
 
 void dump_ast(pad::ast::Node *ast) {
-  std::cout << typeid(ast).name() << " :" << ast->value << std::endl;
+  std::cout << ast->getRaw() << std::endl;
   for (auto& v : ast->children) {
     dump_ast(v);
   }

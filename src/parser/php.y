@@ -8,7 +8,7 @@ using namespace pad::ast;
 
 extern "C" int yylex();
 extern "C" int yyparse();
- 
+
 Node *root;
 void yyerror (char const *msg);
 
@@ -29,11 +29,11 @@ void yyerror (char const *msg);
 %token TOKEN_OPEN_TAG
 %token TOKEN_CLOSE_TAG
 %token TOKEN_NAMESPACE TOKEN_NAMESPACE_SEPARATOR
-%token TOKEN_USE
+%token TOKEN_USE TOKEN_AS
 %token TOKEN_FUNCTION TOKEN_CONST
 
 %type <realstringval> namespace_name
-%type <node> top_statements top_statement
+%type <node> top_statements top_statement use_declaration use_declarations unprefixed_use_declaration
 %%
 
 pad:
@@ -42,13 +42,13 @@ pad:
 
 top_statements:
   top_statements top_statement { $1->children.push_back($2); $$ = $1; }
-  | /* empty */  { $$ = new Node("statement list"); } /* allocate statement list when a data structure is available to do so */
+  | /* empty */  { $$ = new StatementListNode(); }
 
 top_statement:
-  TOKEN_NAMESPACE namespace_name ';' { $$ = new Node(*$2); }
-  | TOKEN_NAMESPACE namespace_name '{' top_statements '}' { $$ = new Node(*$2); $$->children.push_back($4); }
-  | TOKEN_NAMESPACE '{' top_statements '}' { $$ = new Node("global ns"); $$->children.push_back($3); }
-  /*| TOKEN_USE use_declarations ';'  { cout << "Found use statement" << endl; }*/
+  TOKEN_NAMESPACE namespace_name ';' { $$ = new NamespaceNode(*$2); }
+  | TOKEN_NAMESPACE namespace_name '{' top_statements '}' { $$ = new NamespaceNode(*$2); $$->children.push_back($4); }
+  | TOKEN_NAMESPACE '{' top_statements '}' { $$ = new NamespaceNode(""); $$->children.push_back($3); }
+  | TOKEN_USE use_declarations ';'  { $$ = $2; }
   ;
 
 namespace_name:
@@ -65,18 +65,21 @@ namespace_name:
   /*| TOKEN_CONST   { $$ = TOKEN_CONST; }*/
 /*  ;*/
 
-/*use_declarations:*/
-  /*[>use_declarations ',' use_declaration { [> do nothing for now <] }<]*/
-  /*use_declaration { cout << "Using delcaration of: "  << *$1 << endl; }*/
-  /*;*/
+use_declarations:
+  use_declarations ',' use_declaration { $1->children.push_back($3); $$ = $1; }
+  | use_declaration { $$ = $1;  }
+  ;
 
-/*use_declaration:*/
-  /*unprefixed_use_declaration { $$ = $1; }*/
-  /*| TOKEN_NAMESPACE_SEPARATOR unprefixed_use_declaration { $$ = $2; }*/
+use_declaration:
+  unprefixed_use_declaration { $$ = $1; }
+  | TOKEN_NAMESPACE_SEPARATOR unprefixed_use_declaration { $$ = $2; }
 
-/*unprefixed_use_declaration:*/
-  /*namespace_name { $$ = $1; }*/
-  /*[>| namespace_name TOKEN_AS TOKEN_STRING { }<]*/
+unprefixed_use_declaration:
+  namespace_name { $$ = new UseElementNode(*$1); }
+  | namespace_name TOKEN_AS TOKEN_STRING {
+      std::string *alias_string = new std::string($3);
+      $$ = new UseElementNode(*$1, *alias_string);
+  }
 
 %%
 

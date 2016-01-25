@@ -10,3 +10,4 @@ bin/
 lib/
 vendor/
 html/
+test.php
