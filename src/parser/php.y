@@ -51,6 +51,11 @@ top_statement:
   | TOKEN_USE use_declarations ';'  { $$ = $2; }
   ;
 
+/*use_type:*/
+  /*TOKEN_FUNCTION  { $$ = UseElementNode::Type::FUNCTION; }*/
+  /*| TOKEN_CONST   { $$ = UseElementNode::Type::CONST; }*/
+  /*;*/
+
 namespace_name:
   TOKEN_STRING { std::string *token_string = new std::string($1); $$ = token_string; }
   | namespace_name TOKEN_NAMESPACE_SEPARATOR TOKEN_STRING {
@@ -60,19 +65,15 @@ namespace_name:
   }
   ;
 
-/*use_type:*/
-  /*TOKEN_FUNCTION  { $$ = TOKEN_FUNCTION; }*/
-  /*| TOKEN_CONST   { $$ = TOKEN_CONST; }*/
-/*  ;*/
-
 use_declarations:
   use_declarations ',' use_declaration { $1->children.push_back($3); $$ = $1; }
-  | use_declaration { $$ = $1;  }
+  | use_declaration { $$ = new UseNode(); $$->children.push_back($1);  }
   ;
 
 use_declaration:
   unprefixed_use_declaration { $$ = $1; }
   | TOKEN_NAMESPACE_SEPARATOR unprefixed_use_declaration { $$ = $2; }
+  ;
 
 unprefixed_use_declaration:
   namespace_name { $$ = new UseElementNode(*$1); }

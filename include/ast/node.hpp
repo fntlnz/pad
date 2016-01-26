@@ -28,20 +28,24 @@ class NamespaceNode : public Node {
 
 class UseNode : public Node {
   public:
-    UseNode(std::string n) : name(n) {};
-    const std::string name;
     std::string getRaw() {
-      return "Use: " + name;
+      return "Use list node";
     }
 };
 
 
 class UseElementNode : public Node {
   public:
+    enum class Type {
+      CLASS,
+      FUNCTION,
+      CONST,
+    };
     UseElementNode(std::string n) : name(n) {};
     UseElementNode(std::string n, std::string a) : name(n), alias(a) {};
     const std::string name;
     const std::string alias;
+    Type type;
     std::string getRaw() {
       if (alias.empty()) {
         return "Use: " + name;
