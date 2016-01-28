@@ -48,6 +48,14 @@ TOKENS [;:,.\[\]()|^&+-/*=%|~$<>?@]
     return TOKEN_AS;
 }
 
+<IN_SCRIPTING>"const" {
+    return TOKEN_CONST;
+}
+
+<IN_SCRIPTING>"function" {
+    return TOKEN_FUNCTION;
+}
+
 <IN_SCRIPTING>{LABEL} {
     yylval.sval = strdup(yytext);
     return TOKEN_STRING;

@@ -17,11 +17,10 @@ void yyerror (char const *msg);
 %locations
 
 %union {
-  int ival;
-  float fval;
   char *sval;
-  std::string *realstringval;
+  std::string *string;
   pad::ast::Node *node;
+  pad::ast::UseNodeType use_node_type;
 }
 
 %token <sval> TOKEN_STRING
@@ -32,8 +31,9 @@ void yyerror (char const *msg);
 %token TOKEN_USE TOKEN_AS
 %token TOKEN_FUNCTION TOKEN_CONST
 
-%type <realstringval> namespace_name
+%type <string> namespace_name
 %type <node> top_statements top_statement use_declaration use_declarations unprefixed_use_declaration
+%type <use_node_type> use_type
 %%
 
 pad:
@@ -48,13 +48,22 @@ top_statement:
   TOKEN_NAMESPACE namespace_name ';' { $$ = new NamespaceNode(*$2); }
   | TOKEN_NAMESPACE namespace_name '{' top_statements '}' { $$ = new NamespaceNode(*$2); $$->children.push_back($4); }
   | TOKEN_NAMESPACE '{' top_statements '}' { $$ = new NamespaceNode(""); $$->children.push_back($3); }
-  | TOKEN_USE use_declarations ';'  { $$ = $2; }
+  | TOKEN_USE use_declarations ';'  {
+      UseNode *useNode = (UseNode *)$2;
+      useNode->type = UseNodeType::CLASS;
+      $$ = useNode;
+    }
+  | TOKEN_USE use_type use_declarations ';' {
+      UseNode *useNode = (UseNode *)$3;
+      useNode->type = $2;
+      $$ = useNode;
+    }
   ;
 
-/*use_type:*/
-  /*TOKEN_FUNCTION  { $$ = UseElementNode::Type::FUNCTION; }*/
-  /*| TOKEN_CONST   { $$ = UseElementNode::Type::CONST; }*/
-  /*;*/
+use_type:
+  TOKEN_FUNCTION  { $$ = UseNodeType::FUNCTION; }
+  | TOKEN_CONST   { $$ = UseNodeType::CONST; }
+  ;
 
 namespace_name:
   TOKEN_STRING { std::string *token_string = new std::string($1); $$ = token_string; }
