@@ -19,10 +19,8 @@ class StatementListNode : public Node {
 
 class NamespaceNode : public Node {
   public:
-    NamespaceNode(std::string n) : name(n) {};
-    const std::string name;
     std::string getRaw() {
-      return "Namespace: " + name;
+      return "Namespace Node";
     }
 };
 
@@ -42,20 +40,21 @@ class UseNode : public Node {
     UseNodeType type;
 };
 
+class StringNode : public Node {
+  public:
+    std::string value;
+    std::string getRaw() {
+      return "String node: " + value;
+    }
+};
 
 class UseElementNode : public Node {
   public:
-    UseElementNode(std::string n) : name(n) {};
-    UseElementNode(std::string n, std::string a) : name(n), alias(a) {};
-    const std::string name;
-    const std::string alias;
     std::string getRaw() {
-      if (alias.empty()) {
-        return "Use: " + name;
-      }
-      return "Use: " + name + " as " + alias;
+      return "Use element node";
     }
 };
+
 
 } /* ast */
 } /* pad  */ 

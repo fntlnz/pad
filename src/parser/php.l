@@ -57,7 +57,9 @@ TOKENS [;:,.\[\]()|^&+-/*=%|~$<>?@]
 }
 
 <IN_SCRIPTING>{LABEL} {
-    yylval.sval = strdup(yytext);
+    auto string_ast = new pad::ast::StringNode();
+    string_ast->value = std::string(strdup(yytext));
+    yylval.node = string_ast;
     return TOKEN_STRING;
 }
 

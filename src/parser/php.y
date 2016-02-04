@@ -23,7 +23,7 @@ void yyerror (char const *msg);
   pad::ast::UseNodeType use_node_type;
 }
 
-%token <sval> TOKEN_STRING
+%token <node> TOKEN_STRING
 
 %token TOKEN_OPEN_TAG
 %token TOKEN_CLOSE_TAG
@@ -31,7 +31,7 @@ void yyerror (char const *msg);
 %token TOKEN_USE TOKEN_AS
 %token TOKEN_FUNCTION TOKEN_CONST
 
-%type <string> namespace_name
+%type <node> namespace_name
 %type <node> top_statements top_statement use_declaration use_declarations unprefixed_use_declaration
 %type <use_node_type> use_type
 %%
@@ -45,9 +45,9 @@ top_statements:
   | /* empty */  { $$ = new StatementListNode(); }
 
 top_statement:
-  TOKEN_NAMESPACE namespace_name ';' { $$ = new NamespaceNode(*$2); }
-  | TOKEN_NAMESPACE namespace_name '{' top_statements '}' { $$ = new NamespaceNode(*$2); $$->children.push_back($4); }
-  | TOKEN_NAMESPACE '{' top_statements '}' { $$ = new NamespaceNode(""); $$->children.push_back($3); }
+  TOKEN_NAMESPACE namespace_name ';' { $$ = new NamespaceNode(); $$->children.push_back($2); }
+  | TOKEN_NAMESPACE namespace_name '{' top_statements '}' { $$ = new NamespaceNode(); $$->children.push_back($2); $$->children.push_back($4); }
+  | TOKEN_NAMESPACE '{' top_statements '}' { $$ = new NamespaceNode(); $$->children.push_back($3); }
   | TOKEN_USE use_declarations ';'  {
       UseNode *useNode = (UseNode *)$2;
       useNode->type = UseNodeType::CLASS;
@@ -66,11 +66,13 @@ use_type:
   ;
 
 namespace_name:
-  TOKEN_STRING { std::string *token_string = new std::string($1); $$ = token_string; }
+  TOKEN_STRING { $$ = $1; }
   | namespace_name TOKEN_NAMESPACE_SEPARATOR TOKEN_STRING {
-      $1->append("\\");
-      $1->append($3);
-      $$ = $1;
+      StringNode *str_right = (StringNode *)$1;
+      StringNode *str_left = (StringNode *)$3;
+      str_right->value.append("\\");
+      str_right->value.append(str_left->value);
+      $$ = str_right;
   }
   ;
 
@@ -85,10 +87,11 @@ use_declaration:
   ;
 
 unprefixed_use_declaration:
-  namespace_name { $$ = new UseElementNode(*$1); }
+  namespace_name { $$ = new UseElementNode(); $$->children.push_back($1);}
   | namespace_name TOKEN_AS TOKEN_STRING {
-      std::string *alias_string = new std::string($3);
-      $$ = new UseElementNode(*$1, *alias_string);
+      $$ = new UseElementNode();
+      $$->children.push_back($1);
+      $$->children.push_back($3);
   }
 
 %%
