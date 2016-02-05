@@ -14,6 +14,11 @@ int yycolumn = 1;
 %}
 
 %s IN_SCRIPTING
+%s DOUBLE_QUOTES
+%s HEREDOC
+%s BACKQUOTE
+%s VAR_OFFSET
+
 %option yylineno
 %option noyywrap
 ANY_CHARACTER  .
@@ -61,6 +66,13 @@ TOKENS [;:,.\[\]()|^&+-/*=%|~$<>?@]
     string_ast->value = std::string(strdup(yytext));
     yylval.node = string_ast;
     return TOKEN_STRING;
+}
+
+<IN_SCRIPTING,DOUBLE_QUOTES,HEREDOC,BACKQUOTE,VAR_OFFSET>"$"{LABEL} {
+    auto string_ast = new pad::ast::StringNode();
+    string_ast->value = std::string(strdup(yytext));
+    yylval.node = string_ast;
+    return TOKEN_VARIABLE;
 }
 
 <IN_SCRIPTING>{TOKENS} {

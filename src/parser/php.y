@@ -23,7 +23,7 @@ void yyerror (char const *msg);
   pad::ast::UseNodeType use_node_type;
 }
 
-%token <node> TOKEN_STRING
+%token <node> TOKEN_STRING TOKEN_VARIABLE
 
 %token TOKEN_OPEN_TAG
 %token TOKEN_CLOSE_TAG
@@ -32,7 +32,7 @@ void yyerror (char const *msg);
 %token TOKEN_FUNCTION TOKEN_CONST
 
 %type <node> namespace_name
-%type <node> top_statements top_statement use_declaration use_declarations unprefixed_use_declaration
+%type <node> top_statements top_statement use_declaration use_declarations unprefixed_use_declaration const_list const_decl expr variable callable_variable simple_variable
 %type <use_node_type> use_type
 %%
 
@@ -58,6 +58,7 @@ top_statement:
       useNode->type = $2;
       $$ = useNode;
     }
+  | TOKEN_CONST const_list ';'  { $$ = $2; }
   ;
 
 use_type:
@@ -93,6 +94,51 @@ unprefixed_use_declaration:
       $$->children.push_back($1);
       $$->children.push_back($3);
   }
+  ;
+
+const_list:
+    const_list ',' const_decl { $$ = $1; $1->children.push_back($3); }
+  | const_decl {
+      auto declaration = new ConstDeclarationNode();
+      declaration->children.push_back($1);
+      $$ = declaration;
+    }
+;
+
+const_decl:
+  TOKEN_STRING '=' expr {
+    auto element = new ConstElementNode();
+    element->children.push_back($1);
+    element->children.push_back($3);
+    $$ = element;
+  }
+  ;
+
+expr:
+    variable                { $$ = $1; }
+;
+
+variable:
+    callable_variable
+      { $$ = $1; }
+;
+
+callable_variable:
+    simple_variable {
+      auto simple_variable = new VariableNode();
+      simple_variable->children.push_back($1);
+      $$ = simple_variable;
+    }
+
+simple_variable:
+    TOKEN_VARIABLE      { $$ = $1; }
+  | '$' '{' expr '}'  { $$ = $3; }
+  | '$' simple_variable {
+      auto simple_variable = new VariableNode();
+      simple_variable->children.push_back($2);
+      $$ = simple_variable;
+    }
+  ;
 
 %%
 

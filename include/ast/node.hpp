@@ -55,6 +55,27 @@ class UseElementNode : public Node {
     }
 };
 
+class ConstDeclarationNode : public Node {
+  public:
+    std::string getRaw() {
+      return "Const delcaration node";
+    }
+};
+
+class ConstElementNode : public Node {
+  public:
+    std::string getRaw() {
+      return "Const element node";
+    }
+};
+
+class VariableNode : public Node {
+  public:
+    std::string getRaw() {
+      return "Variable Node";
+    }
+};
+
 
 } /* ast */
 } /* pad  */ 
