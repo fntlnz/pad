@@ -1,7 +1,7 @@
 %{
 #include <iostream>
 using namespace std;
-#define YY_DECL extern "C" int yylex()
+#define YY_DECL int yylex()
 
 int yycolumn = 1;
 #define YY_USER_ACTION  yylloc.first_line = yylloc.last_line = yylineno; \
@@ -10,6 +10,7 @@ int yycolumn = 1;
     yycolumn += yyleng;
 
 #include "ast/node.hpp"
+
 #include "parser/parser.hpp"
 %}
 
@@ -62,16 +63,12 @@ TOKENS [;:,.\[\]()|^&+-/*=%|~$<>?@]
 }
 
 <IN_SCRIPTING>{LABEL} {
-    auto string_ast = new pad::ast::StringNode();
-    string_ast->value = std::string(strdup(yytext));
-    yylval.node = string_ast;
+    yylval.string = std::string(strdup(yytext));
     return TOKEN_STRING;
 }
 
 <IN_SCRIPTING,DOUBLE_QUOTES,HEREDOC,BACKQUOTE,VAR_OFFSET>"$"{LABEL} {
-    auto string_ast = new pad::ast::StringNode();
-    string_ast->value = std::string(strdup(yytext));
-    yylval.node = string_ast;
+    yylval.string = std::string(strdup(yytext));
     return TOKEN_VARIABLE;
 }
 

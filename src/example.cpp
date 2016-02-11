@@ -3,19 +3,9 @@
 #include <string>
 #include <iostream>
 #include <typeinfo>
-extern "C"{
 #include "parser/parser.hpp"
-}
 
-extern "C" FILE *yyin;
-extern "C" pad::ast::Node *root;
-
-void dump_ast(pad::ast::Node *ast) {
-  std::cout << ast->getRaw() << std::endl;
-  for (auto& v : ast->children) {
-    dump_ast(v);
-  }
-}
+FILE *yyin;
 
 int parse() {
   // open a file handle to a particular file:
@@ -33,6 +23,5 @@ int parse() {
     yyparse();
   } while (!feof(yyin));
 
-  dump_ast(root);
   return 0;
 }

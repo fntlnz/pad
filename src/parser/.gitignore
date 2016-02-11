@@ -1,3 +1,6 @@
-lexer.cpp
+position.hh
+location.hh
 parser.cpp
 parser.hpp
+stack.hh
+lexer.cpp

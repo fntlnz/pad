@@ -1,0 +1,163 @@
+%skeleton "lalr1.cc"
+%require "3.0.2"
+
+%defines
+%define parser_class_name {PHPParserImpl}
+
+%define parse.error verbose
+%define api.token.constructor
+%define api.value.type variant
+%define parse.assert
+
+%code requires{
+#include <cstdio>
+#include <iostream>
+#include <string>
+#include "ast/node.hpp"
+#include "ast/const_declaration_node.hpp"
+#include "ast/const_element_node.hpp"
+#include "ast/namespace_node.hpp"
+#include "ast/statement_list_node.hpp"
+#include "ast/use_element_node.hpp"
+#include "ast/use_node.hpp"
+#include "ast/variable_node.hpp"
+
+using namespace std;
+using namespace pad::ast;
+
+int yylex();
+int yyparse();
+
+void yyerror (char const *msg);
+
+}
+
+%parse-param { std::unique_ptr<pad::ast::Node> outAst }
+
+%locations
+
+%token <std::string> TOKEN_STRING TOKEN_VARIABLE
+
+%token TOKEN_OPEN_TAG
+%token TOKEN_CLOSE_TAG
+%token TOKEN_NAMESPACE TOKEN_NAMESPACE_SEPARATOR
+%token TOKEN_USE TOKEN_AS
+%token TOKEN_FUNCTION TOKEN_CONST
+
+%type <std::unique_ptr<pad::ast::Node>> top_statement use_declaration use_declaration_list unprefixed_use_declaration const_list const_decl expr variable callable_variable simple_variable namespace_name
+top_statement_list
+%type <int> use_type
+%%
+
+pad:
+  TOKEN_OPEN_TAG top_statement_list TOKEN_CLOSE_TAG { outAst = $2; }
+  ;
+
+top_statement_list:
+  top_statement_list top_statement { $1->children.push_back(std::move($2)); $$ = $1; }
+  | /* empty */  { $$ = std::unique_ptr<StatementListNode>(new StatementListNode()); }
+
+top_statement:
+  TOKEN_NAMESPACE namespace_name ';' { $$ = std::unique_ptr<NamespaceNode>(new NamespaceNode($2)); }
+  | TOKEN_NAMESPACE namespace_name '{' top_statement_list '}' { $$ = std::unique_ptr<NamespaceNode>(new NamespaceNode($2)); $$->statement_list.push_back(std::move($4)); }
+  | TOKEN_NAMESPACE '{' top_statement_list '}' { $$ = std::unique_ptr<NamespaceNode>(new NamespaceNode()); $$->statement_list.push_back(std::move($3)); }
+  | TOKEN_USE use_declaration_list ';'  {
+      std::unique_ptr<UseNode> useNode = (std::unique_ptr<UseNode>)$2;
+      useNode->type = UseNodeType::CLASS;
+      $$ = useNode;
+    }
+  | TOKEN_USE use_type use_declaration_list ';' {
+      std::unique_ptr<UseNode> useNode = (std::unique_ptr<UseNode>)$3;
+      useNode->type = $2;
+      $$ = useNode;
+    }
+  | TOKEN_CONST const_list ';'  { $$ = $2; }
+  ;
+
+use_type:
+  TOKEN_FUNCTION  { $$ = UseNodeType::FUNCTION; }
+  | TOKEN_CONST   { $$ = UseNodeType::CONST; }
+  ;
+
+namespace_name:
+  TOKEN_STRING { $$ = $1; }
+  | namespace_name TOKEN_NAMESPACE_SEPARATOR TOKEN_STRING {
+      $1.append("\\");
+      $1.append($3);
+      $$ = $1;
+  }
+  ;
+
+use_declaration_list:
+  use_declaration_list ',' use_declaration { $1->use_list.push_back(std::move($3)); $$ = $1; }
+  | use_declaration { $$ = std::unique_ptr<UseNode>(new UseNode()); $$->use_list.push_back(std::move($1));  }
+  ;
+
+use_declaration:
+  unprefixed_use_declaration { $$ = $1; }
+  | TOKEN_NAMESPACE_SEPARATOR unprefixed_use_declaration { $$ = $2; }
+  ;
+
+unprefixed_use_declaration:
+  namespace_name { $$ = std::unique_ptr<UseElementNode>(new UseElementNode($1)); }
+  | namespace_name TOKEN_AS TOKEN_STRING {
+      $$ = std::unique_ptr<UseElementNode>(new UseElementNode($1, $3));
+  }
+  ;
+
+const_list:
+    const_list ',' const_decl { $$ = $1; $1->children.push_back(std::move($3)); }
+  | const_decl {
+      auto declaration = std::unique_ptr<ConstDeclarationNode>(new ConstDeclarationNode());
+      declaration->children.push_back(std::move($1));
+      $$ = declaration;
+    }
+;
+
+const_decl:
+  TOKEN_STRING '=' expr {
+    auto element = std::unique_ptr<ConstElementNode>(new ConstElementNode($1, $3));
+    $$ = element;
+  }
+  ;
+
+expr:
+    variable                { $$ = $1; }
+;
+
+variable:
+    callable_variable
+      { $$ = $1; }
+;
+
+callable_variable:
+    simple_variable {
+      std::unique_ptr<VariableNode> simple_variable(new VariableNode());
+      simple_variable->children.push_back(std::move($1));
+      $$ = simple_variable;
+    }
+
+simple_variable:
+    TOKEN_VARIABLE      { $$ = $1; }
+  | '$' '{' expr '}'  { $$ = $3; }
+  | '$' simple_variable {
+      std::unique_ptr<VariableNode> simple_variable(new VariableNode($2));
+      $$ = simple_variable;
+    }
+  ;
+
+%%
+
+void yyerror (char const *msg) {
+  cout << "EEK, parse error!  Message: " << msg << "line: " << yylloc.first_line << endl;
+  cout << "Parse error" << endl;
+  cout << "Message: " << msg << endl;
+  cout << "Context: " << endl;
+  cout << "   Line: " << yylloc.first_line << endl;
+  cout << "   First Column: " << yylloc.first_column << endl;
+  cout << "   Last Column: " << yylloc.last_column << endl;
+
+  exit(-1);
+}
+
+/* vim: set ts=2 sts=2 sw=2 et : */
