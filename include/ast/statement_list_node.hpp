@@ -5,7 +5,7 @@ namespace pad {
 namespace ast {
 class StatementListNode : public Node {
   public:
-    std::list<std::unique_ptr<Node>> children;
+    std::list<Node*> children;
     std::string getRaw();
 };
 }

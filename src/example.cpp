@@ -1,11 +1,23 @@
 #include "example.hpp"
 #include "ast/node.hpp"
-#include <string>
+#include "ast/const_declaration_node.hpp"
+#include "ast/namespace_node.hpp"
+#include "ast/use_element_node.hpp"
+#include "ast/use_node.hpp"
+#include "ast/variable_node.hpp"
 #include <iostream>
-#include <typeinfo>
+extern "C"{
 #include "parser/parser.hpp"
+}
+extern "C" FILE *yyin;
+extern "C" pad::ast::StatementListNode *root;
 
-FILE *yyin;
+void dump_ast(pad::ast::StatementListNode *root) {
+  std::cout << root->getRaw() << std::endl;
+  for (auto &val : root->children) {
+    std::cout << val->getRaw() << std::endl;
+  }
+}
 
 int parse() {
   // open a file handle to a particular file:
@@ -17,11 +29,11 @@ int parse() {
   }
   // set flex to read from it instead of defaulting to STDIN:
   yyin = myfile;
-
   // parse through the input until there is no more:
   do {
     yyparse();
   } while (!feof(yyin));
 
+  dump_ast(root);
   return 0;
 }

@@ -10,7 +10,7 @@ class NamespaceNode : public Node {
   public:
     NamespaceNode(std::string namespace_name) : name(namespace_name) {}
     std::string name;
-    std::unique_ptr<StatementListNode> statement_list;
+    StatementListNode *statement_list;
     std::string getRaw();
 };
 } /* ast */

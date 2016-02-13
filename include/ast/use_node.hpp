@@ -16,7 +16,7 @@ enum UseNodeType {
 class UseNode : public Node {
   public:
     UseNodeType type;
-    std::list<std::unique_ptr<UseElementNode>> use_list;
+    std::list<UseElementNode*> use_list;
     std::string getRaw();
 };
 

@@ -7,7 +7,7 @@ namespace pad {
 namespace ast {
 class ConstDeclarationNode : public Node {
   public:
-    std::list<std::unique_ptr<ConstElementNode>> const_list;
+    std::list<ConstElementNode*> const_list;
     std::string getRaw();
 };
 } /* ast  */
