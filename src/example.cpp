@@ -12,13 +12,6 @@ extern "C"{
 extern "C" FILE *yyin;
 extern "C" pad::ast::StatementListNode *root;
 
-void dump_ast(pad::ast::StatementListNode *root) {
-  std::cout << root->getRaw() << std::endl;
-  for (auto &val : root->children) {
-    std::cout << val->getRaw() << std::endl;
-  }
-}
-
 int parse() {
   // open a file handle to a particular file:
   FILE *myfile = fopen("test.php", "r");
@@ -34,6 +27,6 @@ int parse() {
     yyparse();
   } while (!feof(yyin));
 
-  dump_ast(root);
+  std::cout << root->getRaw() << std::endl;
   return 0;
 }
