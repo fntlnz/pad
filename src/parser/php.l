@@ -15,7 +15,9 @@ int yycolumn = 1;
 #include "ast/use_element_node.hpp"
 #include "ast/use_node.hpp"
 #include "ast/variable_node.hpp"
+#include "ast/group_use_node.hpp"
 #include "parser/parser.hpp"
+
 %}
 %s IN_SCRIPTING
 %s DOUBLE_QUOTES
