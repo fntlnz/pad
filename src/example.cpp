@@ -5,6 +5,7 @@
 #include "ast/use_element_node.hpp"
 #include "ast/use_node.hpp"
 #include "ast/variable_node.hpp"
+#include "ast/group_use_node.hpp"
 #include <iostream>
 extern "C"{
 #include "parser/parser.hpp"

@@ -10,6 +10,7 @@
 #include "ast/use_element_node.hpp"
 #include "ast/use_node.hpp"
 #include "ast/variable_node.hpp"
+#include "ast/group_use_node.hpp"
 
 extern "C" int yylex();
 extern "C" int yyparse();
@@ -27,6 +28,7 @@ void yyerror (char const *msg);
   pad::ast::UseElementNode *use_element;
   pad::ast::StatementListNode *statement_list;
   pad::ast::UseNode *use;
+  pad::ast::GroupUseNode *group_use;
   pad::ast::ConstElementNode *const_element;
   pad::ast::ConstDeclarationNode *const_declaration;
   pad::ast::Node *node;
@@ -45,8 +47,9 @@ void yyerror (char const *msg);
 %type <string> namespace_name
 %type <statement_list> top_statements;
 %type <node>  top_statement
-%type <use> use_declarations
+%type <use> use_declarations unprefixed_use_declarations
 %type <use_element> use_declaration unprefixed_use_declaration
+%type <group_use> group_use_declaration
 %type <const_element> const_decl
 %type <const_declaration> const_list
 %type <variable> variable callable_variable expr simple_variable
@@ -58,13 +61,18 @@ pad:
   ;
 
 top_statements:
-  top_statements top_statement { $1->children.push_back($2); $$ = $1; }
+    top_statements top_statement { $1->children.push_back($2); $$ = $1; }
   | /* empty */  { $$ = new pad::ast::StatementListNode(); }
 
 top_statement:
-  TOKEN_NAMESPACE namespace_name ';' { $$ = new pad::ast::NamespaceNode(*$2); }
+    TOKEN_NAMESPACE namespace_name ';' { $$ = new pad::ast::NamespaceNode(*$2); }
   | TOKEN_NAMESPACE namespace_name '{' top_statements '}' { auto n = new pad::ast::NamespaceNode(*$2); n->statement_list = $4; $$ = n;}
   | TOKEN_NAMESPACE '{' top_statements '}' { auto n = new pad::ast::NamespaceNode(""); n->statement_list = $3; $$ = n; }
+  | TOKEN_USE use_type group_use_declaration ';'    {
+      pad::ast::GroupUseNode *groupUseNode = (pad::ast::GroupUseNode *)$3;
+      groupUseNode->use_declarations->type = $2;
+      $$ = groupUseNode;
+    }
   | TOKEN_USE use_declarations ';'  {
       pad::ast::UseNode *useNode = (pad::ast::UseNode *)$2;
       useNode->type = pad::ast::UseNodeType::CLASS;
@@ -78,13 +86,22 @@ top_statement:
   | TOKEN_CONST const_list ';'  { $$ = $2; }
   ;
 
+group_use_declaration:
+    namespace_name TOKEN_NAMESPACE_SEPARATOR '{' unprefixed_use_declarations '}' {
+      $$ = new pad::ast::GroupUseNode(*$1, $4);
+    }
+  |	TOKEN_NAMESPACE_SEPARATOR namespace_name TOKEN_NAMESPACE_SEPARATOR '{' unprefixed_use_declarations '}' {
+      $$ = new pad::ast::GroupUseNode(*$2, $5);
+    }
+;
+
 use_type:
-  TOKEN_FUNCTION  { $$ = pad::ast::UseNodeType::FUNCTION; }
-  | TOKEN_CONST   { $$ = pad::ast::UseNodeType::CONST; }
+    TOKEN_FUNCTION  { $$ = pad::ast::UseNodeType::FUNCTION; }
+  | TOKEN_CONST     { $$ = pad::ast::UseNodeType::CONST; }
   ;
 
 namespace_name:
-  TOKEN_STRING { $$ = $1; }
+    TOKEN_STRING { $$ = $1; }
   | namespace_name TOKEN_NAMESPACE_SEPARATOR TOKEN_STRING {
       $1->append("\\");
       $1->append(*$3);
@@ -93,17 +110,25 @@ namespace_name:
   ;
 
 use_declarations:
-  use_declarations ',' use_declaration { $1->use_list.push_back($3); $$ = $1; }
+    use_declarations ',' use_declaration { $1->use_list.push_back($3); $$ = $1; }
   | use_declaration { auto n = new pad::ast::UseNode(); n->use_list.push_back($1); $$ = n; }
   ;
 
 use_declaration:
-  unprefixed_use_declaration { $$ = $1; }
+    unprefixed_use_declaration { $$ = $1; }
   | TOKEN_NAMESPACE_SEPARATOR unprefixed_use_declaration { $$ = $2; }
   ;
 
+
+unprefixed_use_declarations:
+		unprefixed_use_declarations ',' unprefixed_use_declaration
+			{ $1->use_list.push_back($3); $$ = $1; }
+	|	unprefixed_use_declaration
+			{ auto n = new pad::ast::UseNode(); n->use_list.push_back($1); $$ = n; }
+;
+
 unprefixed_use_declaration:
-  namespace_name { $$ = new pad::ast::UseElementNode(*$1); }
+    namespace_name { $$ = new pad::ast::UseElementNode(*$1); }
   | namespace_name TOKEN_AS TOKEN_STRING {
       $$ = new pad::ast::UseElementNode(*$1, *$3);
   }
@@ -128,18 +153,17 @@ const_decl:
   ;
 
 expr:
-    variable                { $$ = $1; }
+  variable { $$ = $1; }
 ;
 
 variable:
-    callable_variable
-      { $$ = $1; }
+  callable_variable { $$ = $1; }
 ;
 
 callable_variable:
-    simple_variable {
-      $$ = $1;
-    }
+  simple_variable {
+    $$ = $1;
+  }
 
 simple_variable:
     TOKEN_VARIABLE      { $$ = $1; }
