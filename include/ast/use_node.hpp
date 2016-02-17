@@ -1,21 +1,17 @@
 #include <string>
 #include "ast/node.hpp"
 #include "ast/use_element_node.hpp"
+#include "ast/use_type.hpp"
+
 #ifndef PAD_AST_USE_H_
 #define PAD_AST_USE_H_
 
 namespace pad {
 namespace ast {
 
-enum UseNodeType {
-  FUNCTION,
-  CONST,
-  CLASS
-};
-
 class UseNode : public Node {
   public:
-    UseNodeType type;
+    UseType type;
     std::list<UseElementNode*> use_list;
     std::string getRaw();
 };

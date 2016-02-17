@@ -32,7 +32,7 @@ void yyerror (char const *msg);
   pad::ast::ConstElementNode *const_element;
   pad::ast::ConstDeclarationNode *const_declaration;
   pad::ast::Node *node;
-  pad::ast::UseNodeType use_node_type;
+  pad::ast::UseType use_node_type;
 }
 
 %token <string> TOKEN_STRING
@@ -47,9 +47,9 @@ void yyerror (char const *msg);
 %type <string> namespace_name
 %type <statement_list> top_statements;
 %type <node>  top_statement
-%type <use> use_declarations unprefixed_use_declarations
-%type <use_element> use_declaration unprefixed_use_declaration
-%type <group_use> group_use_declaration
+%type <use> use_declarations unprefixed_use_declarations inline_use_declarations
+%type <use_element> use_declaration unprefixed_use_declaration inline_use_declaration
+%type <group_use> group_use_declaration mixed_group_use_declaration
 %type <const_element> const_decl
 %type <const_declaration> const_list
 %type <variable> variable callable_variable expr simple_variable
@@ -68,6 +68,7 @@ top_statement:
     TOKEN_NAMESPACE namespace_name ';' { $$ = new pad::ast::NamespaceNode(*$2); }
   | TOKEN_NAMESPACE namespace_name '{' top_statements '}' { auto n = new pad::ast::NamespaceNode(*$2); n->statement_list = $4; $$ = n;}
   | TOKEN_NAMESPACE '{' top_statements '}' { auto n = new pad::ast::NamespaceNode(""); n->statement_list = $3; $$ = n; }
+  | TOKEN_USE mixed_group_use_declaration ';' { $$ = $2; }
   | TOKEN_USE use_type group_use_declaration ';'    {
       pad::ast::GroupUseNode *groupUseNode = (pad::ast::GroupUseNode *)$3;
       groupUseNode->use_declarations->type = $2;
@@ -75,7 +76,7 @@ top_statement:
     }
   | TOKEN_USE use_declarations ';'  {
       pad::ast::UseNode *useNode = (pad::ast::UseNode *)$2;
-      useNode->type = pad::ast::UseNodeType::CLASS;
+      useNode->type = pad::ast::UseType::CLASS;
       $$ = useNode;
     }
   | TOKEN_USE use_type use_declarations ';' {
@@ -86,18 +87,27 @@ top_statement:
   | TOKEN_CONST const_list ';'  { $$ = $2; }
   ;
 
-group_use_declaration:
-    namespace_name TOKEN_NAMESPACE_SEPARATOR '{' unprefixed_use_declarations '}' {
+mixed_group_use_declaration:
+    namespace_name TOKEN_NAMESPACE_SEPARATOR '{' inline_use_declarations '}' {
       $$ = new pad::ast::GroupUseNode(*$1, $4);
     }
-  |	TOKEN_NAMESPACE_SEPARATOR namespace_name TOKEN_NAMESPACE_SEPARATOR '{' unprefixed_use_declarations '}' {
+  | TOKEN_NAMESPACE_SEPARATOR namespace_name TOKEN_NAMESPACE_SEPARATOR '{' inline_use_declarations '}' {
       $$ = new pad::ast::GroupUseNode(*$2, $5);
     }
 ;
 
+group_use_declaration:
+    namespace_name TOKEN_NAMESPACE_SEPARATOR '{' unprefixed_use_declarations '}' {
+      $$ = new pad::ast::GroupUseNode(*$1, $4);
+    }
+  | TOKEN_NAMESPACE_SEPARATOR namespace_name TOKEN_NAMESPACE_SEPARATOR '{' unprefixed_use_declarations '}' {
+      $$ = new pad::ast::GroupUseNode(*$2, $5);
+    }
+  ;
+
 use_type:
-    TOKEN_FUNCTION  { $$ = pad::ast::UseNodeType::FUNCTION; }
-  | TOKEN_CONST     { $$ = pad::ast::UseNodeType::CONST; }
+    TOKEN_FUNCTION  { $$ = pad::ast::UseType::FUNCTION; }
+  | TOKEN_CONST     { $$ = pad::ast::UseType::CONST; }
   ;
 
 namespace_name:
@@ -119,12 +129,32 @@ use_declaration:
   | TOKEN_NAMESPACE_SEPARATOR unprefixed_use_declaration { $$ = $2; }
   ;
 
+inline_use_declarations:
+    inline_use_declarations ',' inline_use_declaration {
+      $1->use_list.push_back($3); $$ = $1;
+    }
+  | inline_use_declaration {
+      auto n = new pad::ast::UseNode();
+      n->use_list.push_back($1);
+      $$ = n;
+    }
+;
+
+inline_use_declaration:
+    unprefixed_use_declaration { $$ = $1; $$->type = pad::ast::UseType::CLASS; }
+  | use_type unprefixed_use_declaration { $$ = $2; $$->type = $1; }
+;
+
 
 unprefixed_use_declarations:
-		unprefixed_use_declarations ',' unprefixed_use_declaration
-			{ $1->use_list.push_back($3); $$ = $1; }
-	|	unprefixed_use_declaration
-			{ auto n = new pad::ast::UseNode(); n->use_list.push_back($1); $$ = n; }
+    unprefixed_use_declarations ',' unprefixed_use_declaration {
+      $1->use_list.push_back($3); $$ = $1;
+    }
+  | unprefixed_use_declaration {
+      auto n = new pad::ast::UseNode();
+      n->use_list.push_back($1);
+      $$ = n;
+    }
 ;
 
 unprefixed_use_declaration:
